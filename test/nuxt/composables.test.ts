@@ -8,6 +8,7 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { hasProtocol, withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
+import { Transition } from 'vue'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
@@ -648,6 +649,39 @@ describe('useAsyncData', () => {
     expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
   })
 
+  it('should work when used in a Transition', async () => {
+    const id = ref('foo')
+    const ComponentWithAsyncData = defineComponent({
+      props: { id: String },
+      async setup (props) {
+        const { data } = await useAsyncData(`quote:${props.id}`, () => Promise.resolve({ content: props.id }))
+        return () => h('div', data.value?.content)
+      },
+    })
+    const ComponentWithTransition = defineComponent({
+      setup: () => () => h(Transition, { name: 'test' }, {
+        default: () => h(ComponentWithAsyncData, { id: id.value, key: id.value }),
+      }),
+    })
+    async function setTo (newId: string) {
+      id.value = newId
+      for (let i = 0; i < 5; i++) {
+        await nextTick()
+        await flushPromises()
+      }
+    }
+
+    const wrapper = await mountSuspended(ComponentWithTransition, { global: { stubs: { transition: false } } })
+    await setTo('foo')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+
+    await setTo('bar')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="">bar</div>"`)
+
+    await setTo('foo')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="">foo</div>"`)
+  })
+
   it('duplicate calls are not made after first call has finished', async () => {
     const handler = vi.fn(() => Promise.resolve('hello'))
     const getCachedData = vi.fn((key: string, nuxtApp: NuxtApp) => {
@@ -973,37 +1007,43 @@ describe('url', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by hooks', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { isLoading } = useLoadingIndicator()
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
     await nuxtApp.callHook('page:loading:start')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeTruthy()
 
     await nuxtApp.callHook('page:loading:end')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
-    vi.mocked(setTimeout).mockRestore()
+    vi.useRealTimers()
   })
 })
 
 describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { isLoading, start, finish } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
     await nuxtApp.callHook('page:loading:start')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeTruthy()
     start()
     expect(isLoading.value).toBeTruthy()
     finish()
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
+    vi.useRealTimers()
   })
 })
 
 describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { error, start, finish } = useLoadingIndicator()
     expect(error.value).toBeFalsy()
@@ -1014,23 +1054,26 @@ describe('loading state', () => {
     start()
     expect(error.value).toBeFalsy()
     finish()
+    vi.useRealTimers()
   })
 })
 
 describe('loading state', () => {
   it('expect state from set opts: { force: true }', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { isLoading, start, finish, set } = useLoadingIndicator()
     await nuxtApp.callHook('page:loading:start')
     start({ force: true })
     expect(isLoading.value).toBeTruthy()
     finish()
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
     set(0, { force: true })
     expect(isLoading.value).toBeTruthy()
     set(100, { force: true })
     expect(isLoading.value).toBeFalsy()
+    vi.useRealTimers()
   })
 })
 
