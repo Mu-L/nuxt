@@ -6,16 +6,8 @@ settings:
 
 overrides:
   '@nuxt/kit': workspace:*
-  '@nuxt/nitro-server': workspace:*
-  '@nuxt/rspack-builder': workspace:*
   '@nuxt/schema': workspace:*
-  '@nuxt/vite-builder': workspace:*
-  '@nuxt/webpack-builder': workspace:*
-  '@vue/compiler-core': 3.5.34
-  '@vue/compiler-dom': 3.5.34
-  '@vue/shared': 3.5.34
   nuxt: workspace:*
-  send: '>=1.2.1'
   vite: 8.0.12
   vue: 3.5.34
 
@@ -469,7 +461,7 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.0-rc.16)(typescript@6.0.3)(vite@8.0.12(@types/node@24.12.3)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0))
       '@vue/shared':
-        specifier: 3.5.34
+        specifier: ^3.5.34
         version: 3.5.34
       chokidar:
         specifier: ^5.0.0
@@ -792,7 +784,7 @@ importers:
   packages/schema:
     dependencies:
       '@vue/shared':
-        specifier: 3.5.34
+        specifier: ^3.5.34
         version: 3.5.34
       defu:
         specifier: ^6.1.7
@@ -4673,7 +4665,7 @@ packages:
   '@vue/test-utils@2.4.10':
     resolution: {integrity: sha512-SmoZ5EA1kYiAFs9NkYdiFFQF+cSnUwnvlYEbY+DogWQZUiqOm/Y29eSbc5T6yi75SgSF9863SBeXniIEoPajCA==}
     peerDependencies:
-      '@vue/compiler-dom': 3.5.34
+      '@vue/compiler-dom': 3.x
       '@vue/server-renderer': 3.x
       vue: 3.5.34
     peerDependenciesMeta:
@@ -9592,7 +9584,7 @@ packages:
     resolution: {integrity: sha512-0mpkDTWm1ybtp/Mp3vhrXP4r8yxcGF+quxGyJfrHDl2tl5naQjK3xkIGaVR5BtR5KG1LWJbdCrqn7I6f460j9A==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      '@vue/compiler-core': 3.5.34
+      '@vue/compiler-core': ^3.5.13
       esbuild: '*'
       vue: 3.5.34
 
